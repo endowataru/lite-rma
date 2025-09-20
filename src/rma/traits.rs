@@ -98,8 +98,6 @@ pub trait RmaLocalAttach<T: RmaPointable, D: RmaDevice + ?Sized>:
 }
 
 pub trait RmaDevice: ComBaseDevice {
-    type Error: std::error::Error + Send;
-
     type LocalKey: Copy + Send + Sync + Default + fmt::Debug;
     type RemoteKey: Copy + Send + Sync + Default + fmt::Debug;
 

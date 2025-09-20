@@ -8,8 +8,8 @@ use crate::dev::mpi::mpi_sched::MpiSched;
 use crate::dev::mpi::send::SendDatatype;
 use crate::dev::mpi::window::Window;
 use crate::rma::{
-    self, RmaLocalPtr, RmaLocalPtrMut, RmaProcRemotePtr, RmaProcRemotePtrMut,
-    RmaRemotePtr, RmaRemotePtrMut,
+    self, RmaLocalPtr, RmaLocalPtrMut, RmaProcRemotePtr, RmaProcRemotePtrMut, RmaRemotePtr,
+    RmaRemotePtrMut,
 };
 use crate::rma::{RmaLocalAttach, RmaPointable};
 use crate::traits::ComBaseDevice;
@@ -20,9 +20,7 @@ pub trait MpiRmaDevice: Sync + Send {
     fn window(&self) -> &Self::Window;
 }
 
-impl<D: MpiRmaDevice + ComBaseDevice> rma::RmaDevice for D {
-    type Error = MpiError;
-
+impl<D: MpiRmaDevice + ComBaseDevice<Error = MpiError>> rma::RmaDevice for D {
     type LocalKey = ();
     type RemoteKey = ();
 

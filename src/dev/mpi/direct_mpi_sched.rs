@@ -13,6 +13,10 @@ impl<S: Sched> DirectMpiSched<S> {
     pub fn new(sched: Arc<S>) -> Self {
         Self { sched }
     }
+
+    pub fn sched(&self) -> &Arc<S> {
+        &self.sched
+    }
 }
 
 impl<S: Sched> MpiSched for DirectMpiSched<S> {

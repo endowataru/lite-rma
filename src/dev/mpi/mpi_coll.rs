@@ -24,9 +24,7 @@ pub trait MpiCollDevice: Sync + Send {
     fn comm(&self) -> &Self::Communicator;
 }
 
-impl<D: MpiCollDevice + ComBaseDevice> CollDevice for D {
-    type Error = MpiError;
-
+impl<D: MpiCollDevice + ComBaseDevice<Error = MpiError>> CollDevice for D {
     fn barrier(&self) -> impl Future<Output = Result<(), Self::Error>> + Send {
         async move {
             let req = unsafe { self.comm().ibarrier() }.await?;

@@ -3,12 +3,18 @@ use std::sync::Arc;
 use mpi::{environment::Universe, raw::AsRaw};
 
 use crate::{
+    ProcInt,
     dev::mpi::{
-        direct_communicator::DirectCommunicator, direct_mpi_coll::DirectMpiCollDevice,
-        direct_mpi_rma::DirectMpiRmaDevice, direct_mpi_sched::DirectMpiSched, error::MpiError,
-        mpi_rma::MpiRmaDevice, send::SendComm, window::Window,
+        direct_communicator::DirectCommunicator,
+        direct_mpi_coll::{DirectMpiCollDevice, DirectMpiCommunicator},
+        direct_mpi_rma::{DirectMpiRmaDevice, DirectMpiWindow},
+        direct_mpi_sched::DirectMpiSched,
+        error::MpiError,
+        mpi_coll::MpiCollDevice,
+        mpi_rma::MpiRmaDevice,
+        send::SendComm,
     },
-    traits::ComDevice,
+    traits::{ComBaseDevice, ComDevice},
     ult::sched::Sched,
 };
 
@@ -38,21 +44,33 @@ impl<S: Sched> MpiCom<S> {
     }
 }
 
-impl<S: Sched> ComDevice for MpiCom<S> {
-    type RmaDevice = DirectMpiRmaDevice<S>;
-    fn rma(&self) -> &Self::RmaDevice {
-        &self.rma
+impl<S: Sched> ComBaseDevice for MpiCom<S> {
+    type Error = MpiError;
+    fn this_proc_id(&self) -> ProcInt {
+        self.coll.num_procs()
     }
-
-    type CollDevice = DirectMpiCollDevice<S>;
-    fn coll(&self) -> &Self::CollDevice {
-        &self.coll
+    fn num_procs(&self) -> ProcInt {
+        self.coll.num_procs()
     }
 
     type Sched = DirectMpiSched<S>;
     fn sched(&self) -> &Self::Sched {
-        self.rma().window().sched()
+        todo!()
     }
-
-    type Error = MpiError;
 }
+
+impl<S: Sched> MpiRmaDevice for MpiCom<S> {
+    type Window = DirectMpiWindow<S>;
+    fn window(&self) -> &Self::Window {
+        self.rma.window()
+    }
+}
+
+impl<S: Sched> MpiCollDevice for MpiCom<S> {
+    type Communicator = DirectMpiCommunicator<S>;
+    fn comm(&self) -> &Self::Communicator {
+        self.coll.comm()
+    }
+}
+
+impl<S: Sched> ComDevice for MpiCom<S> {}

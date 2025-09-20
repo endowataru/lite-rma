@@ -7,8 +7,6 @@ use crate::traits::ComBaseDevice;
 pub type SystemOperation = mpi::collective::SystemOperation;
 
 pub trait CollDevice: ComBaseDevice {
-    type Error: std::error::Error + Send;
-
     fn barrier(&self) -> impl Future<Output = Result<(), Self::Error>> + Send;
 
     fn allgather<T>(

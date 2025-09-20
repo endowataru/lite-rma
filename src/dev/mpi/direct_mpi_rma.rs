@@ -12,16 +12,16 @@ use crate::{
 };
 
 type Comm<S> = DirectCommunicator<DirectMpiSched<S>>;
-type Win<S> = DirectWindow<Comm<S>>;
+pub type DirectMpiWindow<S> = DirectWindow<Comm<S>>;
 
 pub struct DirectMpiRmaDevice<S: Sched> {
-    win: Box<Win<S>>,
+    win: Box<DirectMpiWindow<S>>,
 }
 
 impl<S: Sched> DirectMpiRmaDevice<S> {
     pub fn coll_new(comm: Arc<Comm<S>>) -> impl Future<Output = Result<Self, MpiError>> + Send {
         async move {
-            let win = unsafe { Win::create_dynamic(comm) }.await?;
+            let win = unsafe { DirectMpiWindow::create_dynamic(comm) }.await?;
             unsafe { win.lock_all(0) }.await?;
             Ok(Self { win })
         }
@@ -38,7 +38,7 @@ impl<S: Sched> Drop for DirectMpiRmaDevice<S> {
 }
 
 impl<S: Sched> MpiRmaDevice for DirectMpiRmaDevice<S> {
-    type Window = Win<S>;
+    type Window = DirectMpiWindow<S>;
     fn window(&self) -> &Self::Window {
         self.win.as_ref()
     }
@@ -52,4 +52,11 @@ impl<S: Sched> ComBaseDevice for DirectMpiRmaDevice<S> {
     fn num_procs(&self) -> ProcInt {
         self.window().comm().size() as ProcInt
     }
+
+    type Sched = S;
+    fn sched(&self) -> &Self::Sched {
+        self.window().sched().sched()
+    }
+
+    type Error = MpiError;
 }
