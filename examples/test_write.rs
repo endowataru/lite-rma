@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use lite_rma::{
     coll::traits::CollDevice,
-    dev::mpi::{error::MpiError, mpi_com::MpiCom},
+    dev::mpi::{MpiError, MpiCom},
     rma::{RmaDevice, RmaLocalPtrMut},
     structs::alltoall_mem::AlltoallMem,
     traits::ComBaseDevice,
